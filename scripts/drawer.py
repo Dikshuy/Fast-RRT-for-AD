@@ -1,28 +1,9 @@
 from shapely.geometry import Point, Polygon, LineString, box
 from environment import Environment, plot_environment, plot_line, plot_poly
 from math import sqrt
+import matplotlib.pyplot as plt
 
 def draw_results(algo_name, path, V, E, env, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time):
-    """
-    Plots the path from start node to goal region as well as the graph (or tree) searched with the Sampling Based Algorithms.
-    Args:
-        algo_name (str): The name of the algorithm used (used as title of the plot)
-        path (list<(float,float), (float,float)>): The sequence of coordinates traveled to reach goal from start node
-        V (set<(float, float)>): All nodes in the explored graph/tree
-        E (set<(float,float), (float, float)>): The set of all edges considered in the graph/tree
-        env (yaml environment): 2D yaml environment for the path planning to take place
-        bounds (int, int int int): min x, min y, max x, max y of the coordinates in the environment.
-        object_radius (float): radius of our object.
-        resolution (int): Number of segments used to approximate a quarter circle around a point.
-        start_pose(float,float): Coordinates of initial point of the path.
-        goal_region (Polygon): A polygon object representing the end goal.
-        elapsed_time (float): Time it took for the algorithm to run
-    Return:
-        None
-    Action:
-        Plots a path using the environment module.
-    """
-
     graph_size = len(V)
     path_size = len(path)
     # Calculate path length
@@ -31,7 +12,7 @@ def draw_results(algo_name, path, V, E, env, bounds, object_radius, resolution, 
         path_length += euclidian_dist(path[i], path[i+1])
 
     # Create title with descriptive information based on environment, path length, and elapsed_time
-    title = algo_name + "\n" + str(graph_size) + " Nodes. " + str(len(env.obstacles)) + " Obstacles. Path Size: " + str(path_size) + "\n Path Length: " + str(path_length) + "\n Runtime(s)= " + str(elapsed_time)
+    title = algo_name + " Obstacles. Path Size: " + str(path_size) + "\n Path Length: " + str(path_length) + "\n Runtime(s)= " + str(elapsed_time)
 
     # Plot environment
     env_plot = plot_environment(env, bounds)
@@ -61,3 +42,4 @@ def plot_path(env_plot, path, object_radius):
     line = LineString(path)
     x, y = line.xy
     env_plot.plot(x, y, color='red', linewidth=3, solid_capstyle='round', zorder=1)
+    plt.show()

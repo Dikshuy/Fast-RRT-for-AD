@@ -23,8 +23,7 @@ def plot_environment(env, bounds=None, figsize=None):
             width, height = (maxx-minx)*max_height/(maxy-miny), max_height
         figsize = (width, height)
     f = plt.figure(figsize=figsize)
-    # plt.hold(True)
-    f.savefig()
+    
     ax = f.add_subplot(111)
     for i, obs in enumerate(env.obstacles):
         patch = PolygonPatch(obs, fc='blue', ec='blue', alpha=0.5, zorder=20)
