@@ -14,8 +14,9 @@ steer_distance = 0.3
 num_iterations = 10000
 resolution = 3
 drawResults = True
-runForFullIterations = True
+runForFullIterations = False
 isLazy = True
 
 sbpp = SamplingBasedPathPlanner()
 path, v, e = sbpp.RRTStar(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations, drawResults)
+print(path)

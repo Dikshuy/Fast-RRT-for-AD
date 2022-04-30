@@ -42,4 +42,4 @@ def plot_path(env_plot, path, object_radius):
     line = LineString(path)
     x, y = line.xy
     env_plot.plot(x, y, color='red', linewidth=3, solid_capstyle='round', zorder=1)
-    plt.show()
+    # plt.show()
