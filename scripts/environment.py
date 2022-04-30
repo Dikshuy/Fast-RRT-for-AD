@@ -22,9 +22,9 @@ def plot_environment(env, bounds=None, figsize=None):
         if height > 5:
             width, height = (maxx-minx)*max_height/(maxy-miny), max_height
         figsize = (width, height)
-    print(figsize)
     f = plt.figure(figsize=figsize)
-    f.hold('on')
+    # plt.hold(True)
+    f.savefig()
     ax = f.add_subplot(111)
     for i, obs in enumerate(env.obstacles):
         patch = PolygonPatch(obs, fc='blue', ec='blue', alpha=0.5, zorder=20)
@@ -57,7 +57,7 @@ class Environment:
                     self.calculate_scene_dimensions()
                 self.environment_loaded = True
 
-    @property
+    # @property
     def bounds(self):
         return self.bounds
 
@@ -92,7 +92,7 @@ class Environment:
     def parse_yaml_obstacles(self, obstacles):
         self.obstacles = []
         self.obstacles_map = {}
-        for name, description in obstacles.iteritems():
+        for name, description in obstacles.items():
             # Double underscore not allowed in region names.
             if name.find("__") != -1:
                 raise Exception("Names cannot contain double underscores.")
@@ -152,3 +152,4 @@ class Environment:
         f = open(yaml_file, 'w')
         f.write(yaml.dump(yaml_dict, default_flow_style=None))
         f.close()
+    

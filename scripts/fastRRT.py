@@ -25,7 +25,7 @@ class FastRRT():
 	def path(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations, RRT_Flavour):
 		self.env = environment
 
-		self.initialise(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
+		self.initialize(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
 
 		# Define start and goal in terms of coordinates. The goal is the centroid of the goal polygon.
 		x0, y0 = start_pose
@@ -65,7 +65,7 @@ class FastRRT():
 		self.V.add(self.start_pose)
 		goal_centroid = self.get_centroid(self.goal_region)
 
-		for i in xrange(self.N):
+		for i in range(self.N):
 		    if(random.random()>=1.95):
 		        random_point = goal_centroid
 		    else:

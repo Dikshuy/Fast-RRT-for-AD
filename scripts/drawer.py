@@ -27,7 +27,7 @@ def draw_results(algo_name, path, V, E, env, bounds, object_radius, resolution, 
     path_size = len(path)
     # Calculate path length
     path_length = 0.0
-    for i in xrange(len(path)-1):
+    for i in range(len(path)-1):
         path_length += euclidian_dist(path[i], path[i+1])
 
     # Create title with descriptive information based on environment, path length, and elapsed_time
