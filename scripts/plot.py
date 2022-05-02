@@ -10,7 +10,7 @@ def results(path, V, E, env, bounds, object_radius, resolution, start_pose, goal
     for i in range(len(path)-1):
         path_length += dist(path[i], path[i+1])
 
-    title = " Obstacles. Path Size: " + str(path_size) + "\n Path Length: " + str(path_length) + "\n Runtime(s)= " + str(elapsed_time)
+    title = "Path Length: " + str(round(path_length,3)) + "\n Runtime(s)= " + str(round(elapsed_time,3))
 
     env_plot = plot_environment(env, bounds)
     env_plot.set_title(title)
@@ -25,7 +25,7 @@ def results(path, V, E, env, bounds, object_radius, resolution, start_pose, goal
     line = LineString(path)
     x, y = line.xy
     env_plot.plot(x, y, color='red', linewidth=3, solid_capstyle='round', zorder=1)
-    # plt.show()
+    plt.show()
 
 def dist(pt1, pt2):
     return math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)

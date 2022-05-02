@@ -69,8 +69,7 @@ class algo():
 
 		self.initialize(environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations)
 
-		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
-		goal = (x1, y1)
+		goal = self.get_centroid(self.goal_region)    # goal is considered as the centroid of goal polygon
 
 		if start == goal:                               # same starting and end pos
 			path = [start, goal]
@@ -124,8 +123,7 @@ class algo():
 
 		self.initialize(environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations)
 
-		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
-		goal = (x1, y1)
+		goal = self.get_centroid(self.goal_region)    # goal is considered as the centroid of goal polygon
 
 		if start == goal:                               # same starting and end pos
 			path = [start, goal]
@@ -144,7 +142,7 @@ class algo():
 			goal_centroid = self.get_centroid(self.goal_region)
 
 			for i in range(self.N):
-				if(random.random()<0.2):				# choose a random number and rush towards the goal if it's greater than certain lambda value
+				if(random.random()>=1.5):				# choose a random number and rush towards the goal if it's greater than certain lambda value
 					template_point = goal_centroid
 				else:
 					template_point = self.get_collision_free_random_point()
@@ -154,7 +152,8 @@ class algo():
 
 				if self.isEdgeCollisionFree(nearest_point, new_point):
 					possible_points = self.ruleTemplates(nearest_point)
-					template_point = self.find_point_from_template(possible_points, nearest_point, new_point)
+					nearest_set = self.find_nearest_set(new_point)
+					template_point = self.find_point_from_template(nearest_set, nearest_point, new_point)
 					self.V.add(new_point)
 					self.E.add((template_point, new_point))     				
 					self.child_to_parent_dict[new_point] = template_point 		# set the parent
@@ -294,37 +293,36 @@ class algo():
 
 	def ruleTemplates(self, start_point):
 		possible_points = []
-		start_x = start_point[0]
-
+		origin=[0,0]
 		theta = [0.05, 0.1, -0.05, -0.1]
-		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
-			possible_points.append([start_x, i])
-		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
-			possible_points.append([start_x*math.cos(theta[0]), i*math.sin(theta[0])])
-		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
-			possible_points.append([start_x*math.cos(theta[1]), i*math.sin(theta[1])])
-		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
-			possible_points.append([start_x*math.cos(theta[2]), i*math.sin(theta[2])])
-		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
-			possible_points.append([start_x*math.cos(theta[3]), i*math.sin(theta[3])])
+		for i in np.linspace(origin[1], origin[1]+self.step_size, 10):
+			possible_points.append([i, i])
+		for i in np.linspace(origin[1], origin[1]+self.step_size, 10):
+			possible_points.append([i*math.cos(theta[0]), i*math.sin(theta[0])])
+		for i in np.linspace(origin[1], origin[1]+self.step_size, 10):
+			possible_points.append([i*math.cos(theta[1]), i*math.sin(theta[1])])
+		for i in np.linspace(origin[1], origin[1]+self.step_size, 10):
+			possible_points.append([i*math.cos(theta[2]), i*math.sin(theta[2])])
+		for i in np.linspace(origin[1], origin[1]+self.step_size, 10):
+			possible_points.append([i*math.cos(theta[3]), i*math.sin(theta[3])])
 
 		return possible_points
 
 	def find_nearest_point_from_template(self, template_point):
-		template_point = [0,0]
-		max_dist = 0
+		req_point = None
+		min_dist = float('inf')
 		possible_points = self.ruleTemplates(template_point)
 		for vertex in self.V:
 			euc_dist = self.dist(template_point, vertex)
-			if euc_dist > max_dist:
-				max_dist = euc_dist
-				template_point = vertex
-		return template_point
+			if euc_dist < min_dist:
+				min_dist = euc_dist
+				req_point = vertex
+		return req_point
 
-	def find_point_from_template(self, possible_points, nearest_point, new_point):
+	def find_point_from_template(self, possible_points_set, nearest_point, new_point):
 		min_point = nearest_point
 		min_cost = self.cost(nearest_point) + self.dist(nearest_point, new_point)
-		for vertex in self.V:
+		for vertex in possible_points_set:
 			if self.isEdgeCollisionFree(vertex, new_point):
 				temp_cost = self.cost(vertex) + self.dist(vertex, new_point)
 				if temp_cost < min_cost:

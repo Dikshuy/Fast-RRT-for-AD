@@ -17,6 +17,14 @@ class Solver():
             results(path, V, E, environment, bounds, obj_radius, resolution, start, goal_region, elapsed_time)
         return path, V, E
 
+    def RRT_star(self, environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution=3, runForFullIterations=False):
+        start_time = time.time()
+        path, V, E = self.algos.RRT_star(environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution, runForFullIterations)
+        elapsed_time = time.time() - start_time
+        if path:
+            results(path, V, E, environment, bounds, obj_radius, resolution, start, goal_region, elapsed_time)
+        return path, V, E
+
     def fastRRT(self, environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution=3, runForFullIterations=False):
         start_time = time.time()
         path, V, E = self.algos.fastRRT(environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution, runForFullIterations)
@@ -30,15 +38,17 @@ if __name__=="__main__":
 	bounds = (-2, -3, 12, 8)
 	start = (0, 0)
 	goal_region = Polygon([(10,5), (10,6), (11,6), (11,5)])
-	obj_radius = 0.3
+	obj_radius = 0.7
 	step_size = 0.3
-	iterations = 10000
+	iterations = 1000
 	resolution = 3
 	drawResults = True
-	runForFullIterations = False
+	runForFullIterations = True
 
 	solver = Solver()
 	# path, v, e = solver.RRT(environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution, runForFullIterations)
+	# print(path)
+	# path, v, e = solver.RRT_star(environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution, runForFullIterations)
 	# print(path)
 	path, v, e = solver.fastRRT(environment, bounds, start, goal_region, obj_radius, step_size, iterations, resolution, runForFullIterations)
 	print(path)
