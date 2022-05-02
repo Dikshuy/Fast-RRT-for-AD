@@ -38,9 +38,9 @@ if __name__=="__main__":
 	bounds = (-2, -3, 12, 8)
 	start = (0, 0)
 	goal_region = Polygon([(10,5), (10,6), (11,6), (11,5)])
-	obj_radius = 0.7
+	obj_radius = 0.3
 	step_size = 0.3
-	iterations = 1000
+	iterations = 10000
 	resolution = 3
 	drawResults = True
 	runForFullIterations = True

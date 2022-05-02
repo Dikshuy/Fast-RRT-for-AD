@@ -22,20 +22,20 @@ class algo():
 		self.goal_pose = (goal_region.centroid.coords[0])
 
 	def update(curr_pos, new_pos, client):
-    wp = MoveXYGoal()
-    wp.pose_dest.x = new_pos[0]
-    wp.pose_dest.y = new_pos[1]
-    wp.pose_dest.theta = math.atan2((new_pos[1]-curr_pos[1]),(new_pos[0]-curr_pos[0]))
-    #send waypoint to turtlebot3 via move_xy server
-    client.send_goal(wp)
-    client.wait_for_result()
+	    wp = MoveXYGoal()
+	    wp.pose_dest.x = new_pos[0]
+	    wp.pose_dest.y = new_pos[1]
+	    wp.pose_dest.theta = math.atan2((new_pos[1]-curr_pos[1]),(new_pos[0]-curr_pos[0]))
+	    #send waypoint to turtlebot3 via move_xy server
+	    client.send_goal(wp)
+	    client.wait_for_result()
 
-    #getting updated robot location
-    result = client.get_result()
+	    #getting updated robot location
+	    result = client.get_result()
 
-    #write to output file (replacing the part below)
-    print(result.pose_final.x, result.pose_final.y, result.pose_final.theta)
-    return [result.pose_final.x, result.pose_final.y]
+	    #write to output file (replacing the part below)
+	    print(result.pose_final.x, result.pose_final.y, result.pose_final.theta)
+	    return [result.pose_final.x, result.pose_final.y]
 
 	def RRT(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
 		self.env = environment
@@ -86,9 +86,11 @@ class algo():
 
 			return path, self.V, self.E
 
-	def fastRRT(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def RRT_star(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
 		self.env = environment
-
+		rospy.init_node('test', anonymous= True)
+	    client = actionlib.SimpleActionClient('move_xy', MoveXYAction)
+	    client.wait_for_server()
 		self.initialize(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
 
 		x0, y0 = start_pose
@@ -120,6 +122,7 @@ class algo():
 
 				nearest_point = self.find_nearest_point(random_point)
 				new_point = self.steer(nearest_point, random_point)
+				update(nearest_point, new_point, client)
 
 				if self.isEdgeCollisionFree(nearest_point, new_point):
 					nearest_set = self.find_nearest_set(new_point)
