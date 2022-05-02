@@ -4,7 +4,7 @@ import math
 from shapely.geometry import Point, LineString
 
 class algo():
-	def initialize(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def initialize(self, environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 		self.obstacles = environment.obstacles
 		self.bounds = bounds
@@ -14,17 +14,17 @@ class algo():
 		self.obj_radius = obj_radius
 		self.N = num_iterations
 		self.resolution = resolution
-		self.steer_distance = steer_distance
+		self.step_size = step_size
 		self.V = set()
 		self.E = set()
 		self.child_to_parent_dict = dict() 
 		self.runForFullIterations = runForFullIterations
 		self.goal_pose = (goal_region.centroid.coords[0])
 
-	def RRT(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def RRT(self, environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 
-		self.initialize(environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations)
+		self.initialize(environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations)
 
 		goal = self.get_centroid(self.goal_region)    # goal is considered as the centroid of goal polygon
 
@@ -45,7 +45,7 @@ class algo():
 				random_point = self.get_collision_free_random_point()
 
 				nearest_point = self.find_nearest_point(random_point)
-				new_point = self.steer(nearest_point, random_point)
+				new_point = self.forward(nearest_point, random_point)
 				if self.isEdgeCollisionFree(nearest_point, new_point):
 					self.V.add(new_point)
 					self.E.add((nearest_point, new_point))
@@ -64,10 +64,10 @@ class algo():
 
 			return path, self.V, self.E
 
-	def fastRRT(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def RRT_star(self, environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 
-		self.initialize(environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations)
+		self.initialize(environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations)
 
 		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
 		goal = (x1, y1)
@@ -89,13 +89,13 @@ class algo():
 			goal_centroid = self.get_centroid(self.goal_region)
 
 			for i in range(self.N):
-				if(random.random()>=1.95):				# choose a random number and rush towards the goal if it's greater than certain lambda value
+				if(random.random()>=1.5):				# choose a random number and rush towards the goal if it's greater than certain lambda value
 					random_point = goal_centroid
 				else:
 					random_point = self.get_collision_free_random_point()
 
 				nearest_point = self.find_nearest_point(random_point)
-				new_point = self.steer(nearest_point, random_point)
+				new_point = self.forward(nearest_point, random_point)
 
 				if self.isEdgeCollisionFree(nearest_point, new_point):
 					nearest_set = self.find_nearest_set(new_point)
@@ -119,31 +119,72 @@ class algo():
 
 			return path, self.V, self.E
 
-	def dist(self, point1, point2):
-		return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
+	def fastRRT(self, environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations):
+		self.env = environment
 
-	def ball_radii(self):
-		unit_ball_volume = math.pi
-		n = len(self.V)
-		dimensions = 2.0
-		gamma = (2**dimensions)*(1.0 + 1.0/dimensions) * (self.maxx - self.minx) * (self.maxy - self.miny)
-		ball_radius = min(((gamma/unit_ball_volume) * math.log(n) / n)**(1.0/dimensions), self.steer_distance)
-		return ball_radius
+		self.initialize(environment, bounds, start, goal_region, obj_radius, step_size, num_iterations, resolution, runForFullIterations)
 
-	def isOutOfBounds(self, point):
-		if((point[0] - self.obj_radius) < self.minx):
+		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
+		goal = (x1, y1)
+
+		if start == goal:                               # same starting and end pos
+			path = [start, goal]
+			self.V.union([start, goal])
+			self.E.union([(start, goal)])
+		elif self.isEdgeCollisionFree(start, goal):		# rush towards the goal if direct path available
+			path = [start, goal]
+			self.V.union([start, goal])
+			self.E.union([(start, goal)])
+		else:
+			path = []
+			path_length = float('inf')
+			tree_size = 0
+			path_size = 0
+			self.V.add(self.start)
+			goal_centroid = self.get_centroid(self.goal_region)
+
+			for i in range(self.N):
+				if(random.random()<0.2):				# choose a random number and rush towards the goal if it's greater than certain lambda value
+					template_point = goal_centroid
+				else:
+					template_point = self.get_collision_free_random_point()
+
+				nearest_point = self.find_nearest_point_from_template(template_point)
+				new_point = self.forward(nearest_point, template_point)
+
+				if self.isEdgeCollisionFree(nearest_point, new_point):
+					possible_points = self.ruleTemplates(nearest_point)
+					template_point = self.find_point_from_template(possible_points, nearest_point, new_point)
+					self.V.add(new_point)
+					self.E.add((template_point, new_point))     				
+					self.child_to_parent_dict[new_point] = template_point 		# set the parent
+					# print(nearest_set, template_point, new_point)
+					if self.isAtGoalRegion(new_point):
+						if not self.runForFullIterations:
+							path, tree_size, path_size, path_length = self.find_path(self.start, new_point)
+							break
+						else:
+							tmp_path, tmp_tree_size, tmp_path_size, tmp_path_length = self.find_path(self.start, new_point)
+							if tmp_path_length < path_length:
+								path_length = tmp_path_length
+								path = tmp_path
+								tree_size = tmp_tree_size
+								path_size = tmp_path_size
+
+			return path, self.V, self.E
+
+	def dist(self, pt1, pt2):
+		return math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
+
+	def isOutOfBounds(self, pt):
+		if((pt[0] - self.obj_radius) < self.minx) or ((pt[0] + self.obj_radius) > self.maxx):
 			return True
-		if((point[1] - self.obj_radius) < self.miny):
-			return True
-		if((point[0] + self.obj_radius) > self.maxx):
-			return True
-		if((point[1] + self.obj_radius) > self.maxy):
+		if((pt[1] - self.obj_radius) < self.miny) or ((pt[1] + self.obj_radius) > self.maxy):
 			return True
 		return False
 
 	def isEdgeCollisionFree(self, point1, point2):
-		if self.isOutOfBounds(point2):
-			return False
+		if self.isOutOfBounds(point2):	return False
 		line = LineString([point1, point2])
 		expanded_line = line.buffer(self.obj_radius, self.resolution)
 		for obstacle in self.obstacles:
@@ -164,10 +205,9 @@ class algo():
 
 	def find_nearest_set(self, new_point):
 		points = set()
-		ball_radius = self.ball_radii()
 		for vertex in self.V:
 			euc_dist = self.dist(new_point, vertex)
-			if euc_dist < ball_radius:
+			if euc_dist < 0.5:
 				points.add(vertex)
 		return points
 
@@ -203,17 +243,12 @@ class algo():
 				closest_point = vertex
 		return closest_point
 
-	def steer(self, from_point, to_point):
-		fromPoint_buffered = Point(from_point).buffer(self.obj_radius, self.resolution)
-		toPoint_buffered = Point(to_point).buffer(self.obj_radius, self.resolution)
-		if fromPoint_buffered.distance(toPoint_buffered) < self.steer_distance:
-			return to_point
-		else:
-			from_x, from_y = from_point
-			to_x, to_y = to_point
-			theta = math.atan2(to_y - from_y, to_x- from_x)
-			new_point = (from_x + self.steer_distance * math.cos(theta), from_y + self.steer_distance * math.sin(theta))
-			return new_point
+	def forward(self, curr_, next_):
+		curr_x, curr_y = curr_
+		next_x, next_y = next_
+		theta = math.atan2(next_y - curr_y, next_x- curr_x)
+		forward_point = (curr_x + self.step_size * math.cos(theta), curr_y + self.step_size * math.sin(theta))
+		return forward_point
 
 	def isAtGoalRegion(self, point):
 		buffered_point = Point(point).buffer(self.obj_radius, self.resolution)
@@ -256,3 +291,43 @@ class algo():
 					self.E.discard((vertex, parent_point))
 					self.E.add((new_point, vertex))
 					self.child_to_parent_dict[vertex] = new_point
+
+	def ruleTemplates(self, start_point):
+		possible_points = []
+		start_x = start_point[0]
+
+		theta = [0.05, 0.1, -0.05, -0.1]
+		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
+			possible_points.append([start_x, i])
+		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
+			possible_points.append([start_x*math.cos(theta[0]), i*math.sin(theta[0])])
+		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
+			possible_points.append([start_x*math.cos(theta[1]), i*math.sin(theta[1])])
+		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
+			possible_points.append([start_x*math.cos(theta[2]), i*math.sin(theta[2])])
+		for i in np.linspace(start_point[1], start_point[1]+self.step_size, 10):
+			possible_points.append([start_x*math.cos(theta[3]), i*math.sin(theta[3])])
+
+		return possible_points
+
+	def find_nearest_point_from_template(self, template_point):
+		template_point = [0,0]
+		max_dist = 0
+		possible_points = self.ruleTemplates(template_point)
+		for vertex in self.V:
+			euc_dist = self.dist(template_point, vertex)
+			if euc_dist > max_dist:
+				max_dist = euc_dist
+				template_point = vertex
+		return template_point
+
+	def find_point_from_template(self, possible_points, nearest_point, new_point):
+		min_point = nearest_point
+		min_cost = self.cost(nearest_point) + self.dist(nearest_point, new_point)
+		for vertex in self.V:
+			if self.isEdgeCollisionFree(vertex, new_point):
+				temp_cost = self.cost(vertex) + self.dist(vertex, new_point)
+				if temp_cost < min_cost:
+					min_point = vertex
+					min_cost = temp_cost
+		return min_point

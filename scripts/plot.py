@@ -27,5 +27,5 @@ def results(path, V, E, env, bounds, object_radius, resolution, start_pose, goal
     env_plot.plot(x, y, color='red', linewidth=3, solid_capstyle='round', zorder=1)
     # plt.show()
 
-def dist(point1, point2):
-    return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
+def dist(pt1, pt2):
+    return math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
