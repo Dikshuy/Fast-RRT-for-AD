@@ -1,35 +1,32 @@
-from shapely.geometry import Point, LineString
 import numpy as np
 import random 
 import math 
+from shapely.geometry import Point, LineString
 
 class algo():
-	def initialize(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def initialize(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 		self.obstacles = environment.obstacles
 		self.bounds = bounds
 		self.minx, self.miny, self.maxx, self.maxy = bounds
-		self.start_pose = start_pose
+		self.start = start
 		self.goal_region = goal_region
-		self.obj_radius = object_radius
+		self.obj_radius = obj_radius
 		self.N = num_iterations
 		self.resolution = resolution
 		self.steer_distance = steer_distance
 		self.V = set()
 		self.E = set()
-		self.child_to_parent_dict = dict() #key = child, value = parent
+		self.child_to_parent_dict = dict() 
 		self.runForFullIterations = runForFullIterations
 		self.goal_pose = (goal_region.centroid.coords[0])
 
-	def RRT(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def RRT(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 
-		self.initialize(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
+		self.initialize(environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations)
 
-		x0, y0 = start_pose
-		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
-		start = (x0, y0)
-		goal = (x1, y1)
+		goal = self.get_centroid(self.goal_region)    # goal is considered as the centroid of goal polygon
 
 		if start == goal:                               # same starting and end pos
 			path = [start, goal]
@@ -41,7 +38,7 @@ class algo():
 			path_length = float('inf')
 			tree_size = 0
 			path_size = 0
-			self.V.add(self.start_pose)
+			self.V.add(self.start)
 			goal_centroid = self.get_centroid(self.goal_region)
 
 			for i in range(self.N):
@@ -55,10 +52,10 @@ class algo():
 					self.child_to_parent_dict[new_point] = nearest_point
 					if self.isAtGoalRegion(new_point):
 						if not self.runForFullIterations: # If not running for full iterations, terminate as soon as a path is found.
-							path, tree_size, path_size, path_length = self.find_path(self.start_pose, new_point)
+							path, tree_size, path_size, path_length = self.find_path(self.start, new_point)
 							break
 						else: # If running for full iterations, we return the shortest path found.
-							tmp_path, tmp_tree_size, tmp_path_size, tmp_path_length = self.find_path(self.start_pose, new_point)
+							tmp_path, tmp_tree_size, tmp_path_size, tmp_path_length = self.find_path(self.start, new_point)
 							if tmp_path_length < path_length:
 								path_length = tmp_path_length
 								path = tmp_path
@@ -67,14 +64,12 @@ class algo():
 
 			return path, self.V, self.E
 
-	def fastRRT(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations):
+	def fastRRT(self, environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations):
 		self.env = environment
 
-		self.initialize(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
+		self.initialize(environment, bounds, start, goal_region, obj_radius, steer_distance, num_iterations, resolution, runForFullIterations)
 
-		x0, y0 = start_pose
 		x1, y1 = goal_region.centroid.coords[0]    # goal is considered as the centroid of goal polygon
-		start = (x0, y0)
 		goal = (x1, y1)
 
 		if start == goal:                               # same starting and end pos
@@ -90,7 +85,7 @@ class algo():
 			path_length = float('inf')
 			tree_size = 0
 			path_size = 0
-			self.V.add(self.start_pose)
+			self.V.add(self.start)
 			goal_centroid = self.get_centroid(self.goal_region)
 
 			for i in range(self.N):
@@ -112,10 +107,10 @@ class algo():
 					# print(nearest_set, min_point, new_point)
 					if self.isAtGoalRegion(new_point):
 						if not self.runForFullIterations:
-							path, tree_size, path_size, path_length = self.find_path(self.start_pose, new_point)
+							path, tree_size, path_size, path_length = self.find_path(self.start, new_point)
 							break
 						else:
-							tmp_path, tmp_tree_size, tmp_path_size, tmp_path_length = self.find_path(self.start_pose, new_point)
+							tmp_path, tmp_tree_size, tmp_path_size, tmp_path_length = self.find_path(self.start, new_point)
 							if tmp_path_length < path_length:
 								path_length = tmp_path_length
 								path = tmp_path
@@ -177,7 +172,7 @@ class algo():
 		return points
 
 	def cost(self, vertex):
-		path, tree_size, path_size, path_length = self.find_path(self.start_pose, vertex)
+		path, tree_size, path_size, path_length = self.find_path(self.start, vertex)
 		return path_length
 
 	def get_random_point(self):

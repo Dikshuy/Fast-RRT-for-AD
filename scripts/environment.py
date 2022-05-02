@@ -25,7 +25,7 @@ def plot_environment(env, bounds=None, figsize=None):
     
     ax = f.add_subplot(111)
     for i, obs in enumerate(env.obstacles):
-        patch = PolygonPatch(obs, fc='blue', ec='blue', alpha=0.5, zorder=20)
+        patch = PolygonPatch(obs, fc='blue', ec='blue', alpha=1, zorder=10)
         ax.add_patch(patch)
 
     plt.xlim([minx, maxx])
