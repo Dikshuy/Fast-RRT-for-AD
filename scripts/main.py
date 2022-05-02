@@ -1,5 +1,5 @@
 from algos import algo
-from drawer import draw_results
+from plot import results
 from shapely.geometry import Point, Polygon, LineString, box
 from environment import Environment
 import time
@@ -14,7 +14,7 @@ class Solver():
         path, V, E = self.algos.RRT(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
         elapsed_time = time.time() - start_time
         if path and drawResults:
-            draw_results(path, V, E, environment, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time)
+            results(path, V, E, environment, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time)
         return path, V, E
 
     def fastRRT(self, environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution=3, runForFullIterations=False, drawResults=False):
@@ -22,11 +22,11 @@ class Solver():
         path, V, E = self.algos.fastRRT(environment, bounds, start_pose, goal_region, object_radius, steer_distance, num_iterations, resolution, runForFullIterations)
         elapsed_time = time.time() - start_time
         if path and drawResults:
-            draw_results(path, V, E, environment, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time)
+            results(path, V, E, environment, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time)
         return path, V, E
 
 if __name__=="__main__":
-	environment = Environment('simple.yaml')
+	environment = Environment('obs.yaml')
 	bounds = (-2, -3, 12, 8)
 	start_pose = (0, 0)
 	goal_region = Polygon([(10,5), (10,6), (11,6), (11,5)])

@@ -1,9 +1,9 @@
 from shapely.geometry import Point, Polygon, LineString, box
-from environment import Environment, plot_environment, plot_line, plot_poly
+from environment import plot_environment, plot_line, plot_poly
 import math
 import matplotlib.pyplot as plt
 
-def draw_results(path, V, E, env, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time):
+def results(path, V, E, env, bounds, object_radius, resolution, start_pose, goal_region, elapsed_time):
     graph_size = len(V)
     path_size = len(path)
     path_length = 0.0
@@ -27,6 +27,5 @@ def draw_results(path, V, E, env, bounds, object_radius, resolution, start_pose,
     env_plot.plot(x, y, color='red', linewidth=3, solid_capstyle='round', zorder=1)
     # plt.show()
 
-def dist(self, point1, point2):
+def dist(point1, point2):
     return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
-

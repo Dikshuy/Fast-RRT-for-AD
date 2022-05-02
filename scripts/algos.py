@@ -45,10 +45,7 @@ class algo():
 			goal_centroid = self.get_centroid(self.goal_region)
 
 			for i in range(self.N):
-				if(random.random()>=0.15): 
-					random_point = goal_centroid
-				else:
-					random_point = self.get_collision_free_random_point()
+				random_point = self.get_collision_free_random_point()
 
 				nearest_point = self.find_nearest_point(random_point)
 				new_point = self.steer(nearest_point, random_point)
