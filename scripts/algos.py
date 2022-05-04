@@ -277,6 +277,7 @@ class algo():
 		filtered_vals = centroid[centroid.find("(")+1:centroid.find(")")]
 		filtered_x = filtered_vals[0:filtered_vals.find(" ")]
 		filtered_y = filtered_vals[filtered_vals.find(" ") + 1: -1]
+		# print(filtered_x, filtered_y)
 		(x,y) = (float(filtered_x), float(filtered_y))
 		return (x,y)
 

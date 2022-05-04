@@ -35,12 +35,12 @@ class Solver():
 
 if __name__=="__main__":
 	environment = Environment('obs.yaml')
-	bounds = (-2, -3, 12, 8)
+	bounds = (-2.5, -2.5, 20, 3)
 	start = (0, 0)
-	goal_region = Polygon([(10,5), (10,6), (11,6), (11,5)])
+	goal_region = Polygon([(19,-1), (19,1), (20,2), (20,-1)])
 	obj_radius = 0.3
 	step_size = 0.3
-	iterations = 10000
+	iterations = 1000
 	resolution = 3
 	drawResults = True
 	runForFullIterations = True
